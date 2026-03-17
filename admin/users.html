@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="theme-color" content="#0a0505">
+<title>TP Admin — Users</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0a0505;font-family:'DM Sans',sans-serif;color:#f1f5f9;min-height:100vh;padding-bottom:80px}
+h2,h3{font-family:'Syne',sans-serif}.mono{font-family:'DM Mono',monospace}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,5,5,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(239,68,68,.1);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.page{padding:70px 14px 12px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:12px}
+.btn{width:100%;padding:15px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.btn-red{background:#dc2626;color:white}.btn-green{background:#059669;color:white}.btn-ghost{background:rgba(255,255,255,.07);color:#e2e8f0;border:1px solid rgba(255,255,255,.1)}
+.btn-red:active{background:#ef4444}.btn-green:active{background:#10b981}.btn-green:disabled,.btn-red:disabled{opacity:.5}
+.input{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif}
+.input:focus{border-color:#ef4444}.input::placeholder{color:#334155}
+.label{display:block;font-size:13px;font-weight:500;color:#94a3b8;margin-bottom:8px}
+.field{margin-bottom:14px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.stat-row:last-child{border-bottom:none}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,5,5,.97);backdrop-filter:blur(12px);border-top:1px solid rgba(239,68,68,.1);display:flex;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;text-decoration:none;color:#4b2020;font-size:10px;font-weight:500}
+.ni.active{color:#ef4444}
+.hidden{display:none!important}
+.filter-btn{padding:8px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;font-size:13px;color:#64748b;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.filter-btn.active{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#ef4444}
+#toast-wrap{position:fixed;top:74px;left:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid;font-size:14px;transform:translateY(-8px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.toast-warning{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d}
+.toast-info{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:#93c5fd}</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/admin/dashboard.html" style="color:#64748b;display:flex;align-items:center"><i data-lucide="arrow-left" style="width:22px;height:22px"></i></a>
+  <h2 style="font-size:18px;font-weight:700;flex:1">Users</h2>
+  <span id="uc" style="font-size:12px;color:#475569"></span>
+</div>
+<div class="page">
+  <div class="field" style="position:relative"><i data-lucide="search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#475569;pointer-events:none"></i><input type="text" class="input" style="padding-left:44px" placeholder="Search name or email..." oninput="debSrch(this.value)"></div>
+  <div id="ulist" class="card" style="padding:0;overflow:hidden"><p style="padding:24px;text-align:center;color:#334155;font-size:14px">Loading...</p></div>
+</div>
+<div id="usheetbg" class="hidden" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:flex;align-items:flex-end">
+  <div style="background:#100808;border-radius:20px 20px 0 0;padding:24px;width:100%;max-height:85vh;overflow-y:auto">
+    <div style="width:40px;height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin:0 auto 20px"></div>
+    <div id="udetail"></div>
+  </div>
+</div>
+<script>
+let _users=[],_tm=null;
+async function init(){
+  const r=await api('adminGetUsers');
+  if(!r.success){location.href='/admin/index.html';return;}
+  _users=r.users||[];
+  document.getElementById('uc').textContent=_users.length+' users';
+  renderU(_users);lucide.createIcons();
+}
+function renderU(list){
+  const el=document.getElementById('ulist');
+  if(!list.length){el.innerHTML='<p style="padding:24px;text-align:center;color:#334155;font-size:14px">No users found</p>';return;}
+  el.innerHTML=list.map(u=>`<div onclick="openU('${u.userId}')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer">
+    <div style="width:40px;height:40px;border-radius:50%;background:${u.avatarColor||'#10b981'};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;flex-shrink:0;font-family:'Syne',sans-serif">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div>
+    <div style="flex:1;min-width:0"><p style="font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name}</p><p style="font-size:11px;color:#475569">${u.country} · <span style="color:${u.status==='active'?'#10b981':'#ef4444'}">${u.status}</span></p></div>
+    <div style="text-align:right;flex-shrink:0"><p class="mono" style="font-size:13px;color:#10b981;font-weight:600">$${fmt(u.walletBalance)}</p><p style="font-size:11px;color:#f59e0b">V:$${fmt(u.vaultBalance)}</p></div>
+  </div>`).join('');
+  lucide.createIcons({nodes:[el]});
+}
+function debSrch(v){clearTimeout(_tm);_tm=setTimeout(()=>{const q=v.toLowerCase();renderU(_users.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.email||'').toLowerCase().includes(q)));},300);}
+async function openU(uid){
+  document.getElementById('usheetbg').classList.remove('hidden');
+  document.getElementById('udetail').innerHTML='<p style="text-align:center;color:#334155;padding:20px">Loading...</p>';
+  const r=await api('adminGetUser',{userId:uid});
+  if(!r.success){document.getElementById('udetail').innerHTML='<p style="color:#ef4444;text-align:center;padding:20px">Failed</p>';return;}
+  const u=r.user,v=r.vault||{};
+  document.getElementById('udetail').innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+      <div style="width:50px;height:50px;border-radius:50%;background:${u.avatarColor||'#10b981'};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:white;font-family:'Syne',sans-serif;flex-shrink:0">${(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)}</div>
+      <div><p style="font-size:17px;font-weight:700">${u.name}</p><p style="font-size:13px;color:#64748b">${u.email}</p><p style="font-size:12px;font-weight:600;color:${u.status==='active'?'#10b981':'#ef4444'};margin-top:3px">${u.status}</p></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="padding:12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:12px;text-align:center"><p style="font-size:11px;color:#64748b;margin-bottom:3px">Wallet</p><p class="mono" style="color:#10b981;font-size:18px;font-weight:700">$${fmt(u.walletBalance)}</p></div>
+      <div style="padding:12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:12px;text-align:center"><p style="font-size:11px;color:#64748b;margin-bottom:3px">Vault</p><p class="mono" style="color:#f59e0b;font-size:18px;font-weight:700">$${fmt(v.vaultBalance)}</p></div>
+    </div>
+    <p style="font-size:13px;font-weight:600;color:#94a3b8;margin-bottom:10px">Adjust Balance</p>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <select id="at" style="flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;color:white;font-size:14px;outline:none"><option value="wallet">Wallet</option><option value="vault">Vault</option></select>
+      <input id="aa" type="number" style="flex:2;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;color:white;font-size:14px;outline:none" placeholder="Amount (+ or -)">
+    </div>
+    <input id="ar" type="text" style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:12px;color:white;font-size:14px;outline:none;margin-bottom:10px" placeholder="Reason">
+    <button onclick="doAdj('${u.userId}')" style="width:100%;padding:13px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);border-radius:10px;color:#10b981;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:8px">Apply Adjustment</button>
+    <div style="display:flex;gap:8px">
+      <button onclick="doSuspend('${u.userId}','${u.status}')" style="flex:1;padding:12px;background:${u.status==='suspended'?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)'};border:1px solid ${u.status==='suspended'?'rgba(16,185,129,.2)':'rgba(239,68,68,.2)'};border-radius:10px;color:${u.status==='suspended'?'#10b981':'#ef4444'};font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">${u.status==='suspended'?'Unsuspend':'Suspend'}</button>
+      <button onclick="closeU()" style="flex:1;padding:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#94a3b8;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif">Close</button>
+    </div>`;
+  lucide.createIcons({nodes:[document.getElementById('udetail')]});
+}
+async function doAdj(uid){const t=document.getElementById('at').value;const a=parseFloat(document.getElementById('aa').value)||0;const rs=document.getElementById('ar').value;if(!a){toast('Enter amount','warning');return;}const r=await post('adminAdjustBalance',{userId:uid,type:t,amount:a,reason:rs||'Admin'});toast(r.success?'Done':'Failed: '+r.error,r.success?'success':'error');if(r.success){closeU();init();}}
+async function doSuspend(uid,st){const r=await post('adminSuspendUser',{userId:uid});toast(r.success?'User '+r.newStatus:'Failed',r.success?'success':'error');if(r.success){closeU();init();}}
+function closeU(){document.getElementById('usheetbg').classList.add('hidden');}
+document.getElementById('usheetbg').addEventListener('click',e=>{if(e.target===document.getElementById('usheetbg'))closeU();});
+init();
+</script>
+<nav class="bnav"><a href="/admin/dashboard.html" class="ni "><i data-lucide="layout-dashboard" style="width:22px;height:22px"></i><span>Home</span></a><a href="/admin/users.html" class="ni active"><i data-lucide="users" style="width:22px;height:22px"></i><span>Users</span></a><a href="/admin/transactions.html" class="ni "><i data-lucide="list" style="width:22px;height:22px"></i><span>Txns</span></a><a href="/admin/config.html" class="ni "><i data-lucide="settings" style="width:22px;height:22px"></i><span>Config</span></a><a href="/admin/audit.html" class="ni "><i data-lucide="file-text" style="width:22px;height:22px"></i><span>Audit</span></a></nav>
+<div id="toast-wrap"></div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbzOh7BafxwXSmNNNn01pu-KtdXoLKqzxMiZxXsc-ETf1p7URqMooz4D1WhsgN2CjOpx/exec';
+let _sess=null;
+function getS(){try{return JSON.parse(sessionStorage.getItem('tp_s')||'null');}catch{return null;}}
+_sess=getS();if(!_sess?.t||_sess.u?.role!=='admin')location.href='/admin/index.html';
+async function api(a,p={}){const url=new URL(API);url.searchParams.set('action',a);url.searchParams.set('token',_sess.t);Object.entries(p).forEach(([k,v])=>url.searchParams.set(k,v));try{return await(await fetch(url)).json();}catch{return{success:false};}}
+async function post(a,b){try{return await(await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:a,token:_sess.t,...b})})).json();}catch{return{success:false,error:'Network error'};}}
+function fmt(n,d=2){return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtDT(s){if(!s)return'—';return new Date(s).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+function toast(m,t='info',d=4000){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className=`toast toast-${t}`;const ic={success:'check-circle',error:'x-circle',warning:'alert-triangle',info:'info'}[t]||'info';el.innerHTML=`<i data-lucide="${ic}" style="width:16px;height:16px;flex-shrink:0"></i><span>${m}</span>`;w.appendChild(el);lucide.createIcons({nodes:[el]});requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300);},d);}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>TradePulse Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#060d1a;font-family:'DM Sans',sans-serif;color:#f1f5f9;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px;width:100%;max-width:400px}
+.input{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:16px;color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif;margin-bottom:14px}
+.input:focus{border-color:#ef4444}
+#toast-wrap{position:fixed;top:16px;left:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid;font-size:14px}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.toast-warning{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d}
+</style>
+</head>
+<body>
+<div style="text-align:center;margin-bottom:28px">
+  <div style="width:60px;height:60px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><i data-lucide="shield" style="width:28px;height:28px;color:#ef4444"></i></div>
+  <h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800">Admin Portal</h1>
+  <p style="color:#334155;font-size:13px;margin-top:4px">TradePulse Control Panel</p>
+</div>
+<div class="card">
+  <label style="display:block;font-size:13px;color:#94a3b8;margin-bottom:8px">Email</label>
+  <input id="em" type="email" class="input" placeholder="admin@example.com" inputmode="email" autocomplete="email">
+  <label style="display:block;font-size:13px;color:#94a3b8;margin-bottom:8px">Password</label>
+  <input id="pw" type="password" class="input" placeholder="••••••••" autocomplete="current-password">
+  <button id="btn" onclick="doLogin()" style="width:100%;padding:17px;background:#dc2626;color:white;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">Sign In to Admin</button>
+</div>
+<div id="toast-wrap"></div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbzOh7BafxwXSmNNNn01pu-KtdXoLKqzxMiZxXsc-ETf1p7URqMooz4D1WhsgN2CjOpx/exec';
+try{const s=JSON.parse(sessionStorage.getItem('tp_s')||'null');if(s?.t&&s.u?.role==='admin')location.href='/admin/dashboard.html';}catch(e){}
+async function doLogin(){
+  const e=document.getElementById('em').value.trim();const p=document.getElementById('pw').value;
+  if(!e||!p){toast('Fill all fields','warning');return;}
+  const btn=document.getElementById('btn');btn.disabled=true;btn.textContent='Signing in...';
+  try{
+    const r=await(await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:'adminLogin',email:e,password:p,deviceFingerprint:'admin'})})).json();
+    btn.disabled=false;btn.textContent='Sign In to Admin';
+    if(!r.success){toast(r.error||'Login failed','error');return;}
+    sessionStorage.setItem('tp_s',JSON.stringify({t:r.sessionToken,u:r.admin}));
+    location.href='/admin/dashboard.html';
+  }catch(err){btn.disabled=false;btn.textContent='Sign In to Admin';toast('Network error','error');}
+}
+document.getElementById('pw').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+function toast(m,t){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className='toast toast-'+t;el.textContent=m;w.appendChild(el);setTimeout(()=>el.remove(),4000);}
+lucide.createIcons();
+</script>
+</body></html>

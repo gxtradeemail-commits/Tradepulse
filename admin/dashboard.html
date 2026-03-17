@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="e<div></div>n">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="theme-color" content="#0a0505">
+<title>TP Admin — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0a0505;font-family:'DM Sans',sans-serif;color:#f1f5f9;min-height:100vh;padding-bottom:80px}
+h2,h3{font-family:'Syne',sans-serif}.mono{font-family:'DM Mono',monospace}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(10,5,5,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(239,68,68,.1);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.page{padding:70px 14px 12px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:12px}
+.btn{width:100%;padding:15px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s}
+.btn-red{background:#dc2626;color:white}.btn-green{background:#059669;color:white}.btn-ghost{background:rgba(255,255,255,.07);color:#e2e8f0;border:1px solid rgba(255,255,255,.1)}
+.btn-red:active{background:#ef4444}.btn-green:active{background:#10b981}.btn-green:disabled,.btn-red:disabled{opacity:.5}
+.input{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px;color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif}
+.input:focus{border-color:#ef4444}.input::placeholder{color:#334155}
+.label{display:block;font-size:13px;font-weight:500;color:#94a3b8;margin-bottom:8px}
+.field{margin-bottom:14px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.stat-row:last-child{border-bottom:none}
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,5,5,.97);backdrop-filter:blur(12px);border-top:1px solid rgba(239,68,68,.1);display:flex;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;text-decoration:none;color:#4b2020;font-size:10px;font-weight:500}
+.ni.active{color:#ef4444}
+.hidden{display:none!important}
+.filter-btn{padding:8px 14px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;font-size:13px;color:#64748b;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif}
+.filter-btn.active{background:rgba(239,68,68,.1);border-color:rgba(239,68,68,.25);color:#ef4444}
+#toast-wrap{position:fixed;top:74px;left:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid;font-size:14px;transform:translateY(-8px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.toast-warning{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d}
+.toast-info{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:#93c5fd}</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h2 style="font-size:18px;font-weight:800;flex:1;color:#ef4444">Admin</h2>
+  <button onclick="runEarnings()" style="padding:8px 12px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:9px;color:#10b981;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-right:6px">Run Earnings</button>
+  <button onclick="runPayout()" style="padding:8px 12px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:9px;color:#f59e0b;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Payout</button>
+</div>
+<div class="page">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div class="card" style="padding:14px"><p style="font-size:11px;color:#64748b;margin-bottom:4px">Users</p><p class="mono" style="font-size:20px;font-weight:700" id="s-u">—</p></div>
+    <div class="card" style="padding:14px"><p style="font-size:11px;color:#64748b;margin-bottom:4px">In Vaults</p><p class="mono" style="color:#f59e0b;font-size:20px;font-weight:700" id="s-v">—</p></div>
+    <div class="card" style="padding:14px"><p style="font-size:11px;color:#64748b;margin-bottom:4px">Paid Out</p><p class="mono" style="color:#8b5cf6;font-size:20px;font-weight:700" id="s-p">—</p></div>
+    <div class="card" style="padding:14px"><p style="font-size:11px;color:#64748b;margin-bottom:4px">Pending</p><p class="mono" style="color:#ef4444;font-size:20px;font-weight:700" id="s-pend">—</p></div>
+  </div>
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><h3 style="font-size:15px;font-weight:700">Recent Transactions</h3><a href="/admin/transactions.html" style="color:#ef4444;font-size:13px;text-decoration:none">All</a></div><div id="rtxs"><p style="color:#334155;text-align:center;padding:16px;font-size:14px">Loading...</p></div></div>
+</div>
+<script>
+async function init(){
+  const r=await api('adminGetDashboard');
+  if(!r.success){location.href='/admin/index.html';return;}
+  const s=r.stats||{};
+  document.getElementById('s-u').textContent=(s.totalUsers||0).toLocaleString();
+  document.getElementById('s-v').textContent='$'+fmt(s.totalInVaults||0);
+  document.getElementById('s-p').textContent='$'+fmt(s.totalPaidOut||0);
+  document.getElementById('s-pend').textContent=(s.pendingDeposits||0)+(s.pendingWithdrawals||0);
+  const el=document.getElementById('rtxs');
+  const txs=r.recentTransactions||[];
+  if(!txs.length){el.innerHTML='<p style="color:#334155;text-align:center;padding:14px;font-size:14px">No transactions</p>';lucide.createIcons();return;}
+  const SC={complete:'#10b981',pending:'#f59e0b',processing:'#60a5fa',failed:'#ef4444',rejected:'#ef4444'};
+  el.innerHTML=txs.map(t=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)"><div style="flex:1"><p style="font-size:13px;font-weight:500;text-transform:capitalize">${(t.type||'').replace(/_/g,' ')}</p><p style="font-size:11px;color:#475569">${fmtDT(t.timestamp)}</p></div><div style="text-align:right"><p class="mono" style="font-size:13px;font-weight:700">$${fmt(t.amountUSD||t.amount)}</p><p style="font-size:10px;color:${SC[t.status]||'#64748b'}">${t.status}</p></div></div>`).join('');
+  lucide.createIcons({nodes:[el]});
+}
+async function runEarnings(){if(!confirm('Run daily earnings now?'))return;const r=await post('adminManualEarnings',{});toast(r.success?'Earnings processed':'Failed: '+r.error,r.success?'success':'error');}
+async function runPayout(){if(!confirm('Run payout NOW? Resets all vaults.'))return;const r=await post('adminManualPayout',{});toast(r.success?'Payout processed':'Failed: '+r.error,r.success?'success':'error');}
+init();
+</script>
+<nav class="bnav"><a href="/admin/dashboard.html" class="ni active"><i data-lucide="layout-dashboard" style="width:22px;height:22px"></i><span>Home</span></a><a href="/admin/users.html" class="ni "><i data-lucide="users" style="width:22px;height:22px"></i><span>Users</span></a><a href="/admin/transactions.html" class="ni "><i data-lucide="list" style="width:22px;height:22px"></i><span>Txns</span></a><a href="/admin/config.html" class="ni "><i data-lucide="settings" style="width:22px;height:22px"></i><span>Config</span></a><a href="/admin/audit.html" class="ni "><i data-lucide="file-text" style="width:22px;height:22px"></i><span>Audit</span></a></nav>
+<div id="toast-wrap"></div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbzOh7BafxwXSmNNNn01pu-KtdXoLKqzxMiZxXsc-ETf1p7URqMooz4D1WhsgN2CjOpx/exec';
+let _sess=null;
+function getS(){try{return JSON.parse(sessionStorage.getItem('tp_s')||'null');}catch{return null;}}
+_sess=getS();if(!_sess?.t||_sess.u?.role!=='admin')location.href='/admin/index.html';
+async function api(a,p={}){const url=new URL(API);url.searchParams.set('action',a);url.searchParams.set('token',_sess.t);Object.entries(p).forEach(([k,v])=>url.searchParams.set(k,v));try{return await(await fetch(url)).json();}catch{return{success:false};}}
+async function post(a,b){try{return await(await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:a,token:_sess.t,...b})})).json();}catch{return{success:false,error:'Network error'};}}
+function fmt(n,d=2){return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtDT(s){if(!s)return'—';return new Date(s).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+function toast(m,t='info',d=4000){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className=`toast toast-${t}`;const ic={success:'check-circle',error:'x-circle',warning:'alert-triangle',info:'info'}[t]||'info';el.innerHTML=`<i data-lucide="${ic}" style="width:16px;height:16px;flex-shrink:0"></i><span>${m}</span>`;w.appendChild(el);lucide.createIcons({nodes:[el]});requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300);},d);}
+
+</script>
+</body>
+</html>
