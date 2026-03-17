@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#060d1a">
+<title>TradePulse — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#060d1a;font-family:'DM Sans',sans-serif;color:#f1f5f9;min-height:100vh;padding-bottom:80px}
+h1,h2,h3{font-family:'Syne',sans-serif}.mono{font-family:'DM Mono',monospace}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,13,26,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.page{padding:70px 14px 12px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:12px}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(6,13,26,.97);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.07);display:flex;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;text-decoration:none;color:#334155;font-size:10px;font-weight:500;transition:color .15s}
+.nav-item.active{color:#10b981}
+.btn{width:100%;padding:15px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-green{background:#059669;color:white}
+.btn-green:active{background:#10b981}
+.btn-outline{background:rgba(255,255,255,.06);color:#e2e8f0;border:1px solid rgba(255,255,255,.1)}
+.trade-row{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.trade-row:last-child{border-bottom:none}
+.skeleton{background:linear-gradient(90deg,#0f1e35 25%,#172440 50%,#0f1e35 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:8px;height:60px;margin-bottom:10px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:600;border:1px solid}
+.badge-green{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.25);color:#10b981}
+.badge-amber{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25);color:#f59e0b}
+.badge-blue{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.25);color:#60a5fa}
+.notif-dot{width:8px;height:8px;background:#ef4444;border-radius:50%;position:absolute;top:0;right:0}
+.input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif}
+.input:focus{border-color:#10b981}
+.ticker{overflow:hidden;background:rgba(16,185,129,.04);border:1px solid rgba(16,185,129,.1);border-radius:10px;padding:8px 14px;margin-bottom:12px}
+.ticker-inner{display:flex;gap:24px;animation:tick 30s linear infinite;white-space:nowrap}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+#toast-wrap{position:fixed;top:74px;left:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid;font-size:14px;font-weight:500;transform:translateY(-8px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.toast-info{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:#93c5fd}
+.toast-warning{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d}
+.modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:flex-end}
+.modal-sheet{background:#0c1628;border-radius:20px 20px 0 0;padding:24px;width:100%;max-height:80vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:white">TradePulse</div>
+    <div style="font-size:12px;color:#334155" id="greet">Welcome back</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button onclick="openNotifs()" style="position:relative;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:9px;cursor:pointer;color:#94a3b8" id="notif-btn">
+      <i data-lucide="bell" style="width:20px;height:20px;display:block"></i>
+      <span id="notif-dot" class="notif-dot hidden"></span>
+    </button>
+    <div id="av-circle" style="width:38px;height:38px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:white;font-family:'Syne',sans-serif"></div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- TICKER -->
+  <div class="ticker" id="ticker-wrap">
+    <div class="ticker-inner" id="ticker"><span style="color:#334155;font-size:12px">Loading market data...</span></div>
+  </div>
+
+  <!-- SYSTEM LOCK BANNER -->
+  <div id="lock-banner" class="hidden" style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+    <i data-lucide="wrench" style="width:18px;height:18px;color:#f59e0b;flex-shrink:0"></i>
+    <p style="font-size:13px;color:#fbbf24" id="lock-msg"></p>
+  </div>
+
+  <!-- WALLET CARD -->
+  <div class="card" style="background:linear-gradient(135deg,rgba(16,185,129,.1) 0%,rgba(6,13,26,0) 100%);border-color:rgba(16,185,129,.2)">
+    <p style="color:#94a3b8;font-size:13px;margin-bottom:4px">Wallet Balance</p>
+    <p class="mono" style="font-size:36px;font-weight:700;color:white;margin-bottom:16px" id="wallet-bal">$0.00</p>
+    <div style="display:flex;gap:10px">
+      <a href="deposit.html" class="btn btn-green" style="text-decoration:none">
+        <i data-lucide="plus" style="width:17px;height:17px"></i> Deposit
+      </a>
+      <a href="withdraw.html" class="btn btn-outline" id="wd-btn" style="text-decoration:none">
+        <i data-lucide="arrow-up" style="width:17px;height:17px"></i> Withdraw
+      </a>
+    </div>
+  </div>
+
+  <!-- VAULT CARD -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+      <div>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:3px">Trading Vault</p>
+        <p class="mono" style="font-size:24px;font-weight:700;color:white" id="vault-bal">$0.00</p>
+      </div>
+      <span class="badge badge-amber" id="vault-badge">
+        <i data-lucide="lock" style="width:10px;height:10px;margin-right:3px"></i>Locked
+      </span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)">
+      <span style="color:#64748b">Daily earnings (15%)</span>
+      <span class="mono" style="color:#10b981;font-weight:600" id="vault-daily">$0.00</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-top:1px solid rgba(255,255,255,.05)">
+      <span style="color:#64748b">Next payout</span>
+      <span style="color:#f59e0b;font-weight:500" id="payout-disp">—</span>
+    </div>
+    <!-- Quick Transfer -->
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <input id="tf-amt" type="number" class="input" style="font-size:14px;padding:12px 14px" placeholder="Amount to vault" inputmode="decimal">
+      <button onclick="doTransfer()" style="padding:12px 16px;background:#059669;color:white;border:none;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif">Transfer</button>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div class="card" style="padding:14px">
+      <p style="color:#64748b;font-size:12px;margin-bottom:4px">Total Earned</p>
+      <p class="mono" style="color:#10b981;font-size:20px;font-weight:700" id="total-earned">$0.00</p>
+    </div>
+    <div class="card" style="padding:14px">
+      <p style="color:#64748b;font-size:12px;margin-bottom:4px">Countdown</p>
+      <p class="mono" style="color:#60a5fa;font-size:17px;font-weight:700" id="countdown">--d --h</p>
+    </div>
+  </div>
+
+  <!-- AI TRADE FEED -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="width:8px;height:8px;background:#10b981;border-radius:50%;display:block;animation:pulse 2s infinite"></span>
+        <h3 style="font-size:16px;font-weight:700">AI Trade Feed</h3>
+      </div>
+      <span class="badge badge-green">LIVE</span>
+    </div>
+    <div id="trade-feed">
+      <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton" style="height:44px"></div>
+    </div>
+  </div>
+
+  <!-- RECENT TRANSACTIONS -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <h3 style="font-size:15px;font-weight:700">Recent Transactions</h3>
+      <a href="transactions.html" style="color:#10b981;font-size:13px;text-decoration:none;font-weight:500">See all</a>
+    </div>
+    <div id="recent-txs"><div class="skeleton" style="height:48px"></div><div class="skeleton" style="height:48px"></div></div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- NOTIFICATIONS SHEET -->
+<div id="notif-sheet" class="modal-bg hidden">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="font-size:18px;font-weight:700">Notifications</h3>
+      <button onclick="markAllRead()" style="background:none;border:none;color:#10b981;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif">Mark all read</button>
+    </div>
+    <div id="notif-list"><p style="color:#334155;font-size:14px;text-align:center;padding:20px">Loading...</p></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <a href="dashboard.html" class="nav-item active">
+    <i data-lucide="home" style="width:22px;height:22px"></i><span>Home</span>
+  </a>
+  <a href="vault.html" class="nav-item">
+    <i data-lucide="vault" style="width:22px;height:22px"></i><span>Vault</span>
+  </a>
+  <a href="deposit.html" class="nav-item">
+    <div style="width:46px;height:46px;background:#059669;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:2px;margin-top:-18px;border:3px solid #060d1a">
+      <i data-lucide="plus" style="width:22px;height:22px;color:white"></i>
+    </div>
+    <span>Deposit</span>
+  </a>
+  <a href="transactions.html" class="nav-item">
+    <i data-lucide="list" style="width:22px;height:22px"></i><span>History</span>
+  </a>
+  <a href="profile.html" class="nav-item">
+    <i data-lucide="user" style="width:22px;height:22px"></i><span>Profile</span>
+  </a>
+</nav>
+
+<div id="toast-wrap"></div>
+<style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}</style>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbzOh7BafxwXSmNNNn01pu-KtdXoLKqzxMiZxXsc-ETf1p7URqMooz4D1WhsgN2CjOpx/exec';
+let _sess=null,_vaultBal=0,_walletBal=0,_payoutDate='',_allTrades=[];
+
+function getS(){try{return JSON.parse(sessionStorage.getItem('tp_s')||'null');}catch{return null;}}
+_sess=getS();if(!_sess?.t){location.href='index.html';}
+
+async function api(action,p={}){
+  const url=new URL(API);url.searchParams.set('action',action);url.searchParams.set('token',_sess.t);
+  Object.entries(p).forEach(([k,v])=>url.searchParams.set(k,v));
+  try{return await(await fetch(url)).json();}catch(e){return{success:false};}
+}
+async function post(action,body){
+  try{return await(await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,token:_sess.t,...body})})).json();}
+  catch(e){return{success:false,error:'Network error'};}
+}
+
+function fmt(n,d=2){return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtDT(s){if(!s)return'—';return new Date(s).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+
+async function loadAll(){
+  const [ud,vd,trades,txs,notifs]=await Promise.all([
+    api('getUser'),api('getVault'),api('getTrades'),
+    api('getTransactions',{limit:'5'}),api('getNotifications')
+  ]);
+
+  // User data
+  if(ud.success){
+    const u=ud.user;_walletBal=parseFloat(u.walletBalance||0);
+    const ini=(u.name||'U').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    document.getElementById('av-circle').textContent=ini;
+    document.getElementById('av-circle').style.background=u.avatarColor||'#10b981';
+    document.getElementById('wallet-bal').textContent='$'+fmt(_walletBal);
+    const hr=new Date().getHours();
+    document.getElementById('greet').textContent=(hr<12?'Good morning':'hr<17?Good afternoon':'Good evening')+', '+u.name?.split(' ')[0]+'!';
+    if(ud.config){
+      _payoutDate=ud.config.currentPayoutDate||'';
+      document.getElementById('payout-disp').textContent=_payoutDate||'—';
+      if(ud.config.systemLocked){
+        document.getElementById('lock-banner').classList.remove('hidden');
+        document.getElementById('lock-msg').textContent=ud.config.maintenanceMessage||'Platform under maintenance';
+      }
+      if(_payoutDate)startCountdown(_payoutDate);
+    }
+    // Withdrawal button state
+    const today=new Date().toLocaleDateString('en-US',{weekday:'long'});
+    const wd1=ud.config?.withdrawalDay1||'Saturday',wd2=ud.config?.withdrawalDay2||'Sunday';
+    if(today!==wd1&&today!==wd2)document.getElementById('wd-btn').style.opacity='0.5';
+  }
+
+  // Vault
+  if(vd.success){
+    const v=vd.vault;_vaultBal=parseFloat(v.vaultBalance||0);
+    document.getElementById('vault-bal').textContent='$'+fmt(_vaultBal);
+    document.getElementById('total-earned').textContent='$'+fmt(v.lifetimeEarnings||0);
+    const rate=parseFloat(ud.config?.defaultDailyRate||0.15);
+    document.getElementById('vault-daily').textContent='$'+fmt(_vaultBal*rate);
+    if(_vaultBal<=0)document.getElementById('vault-badge').style.display='none';
+  }
+
+  // Trades
+  if(trades.success){
+    _allTrades=trades.trades||[];
+    renderTrades(_allTrades.slice(0,10));
+    updateTicker(_allTrades.slice(0,8));
+  }
+
+  // Transactions
+  if(txs.success)renderTxs(txs.transactions||[]);
+
+  // Notifications
+  if(notifs.success){
+    const unread=notifs.unreadCount||0;
+    if(unread>0)document.getElementById('notif-dot').classList.remove('hidden');
+    renderNotifs(notifs.notifications||[]);
+  }
+  lucide.createIcons();
+}
+
+function renderTrades(trades){
+  const el=document.getElementById('trade-feed');
+  if(!trades.length){el.innerHTML='<p style="color:#334155;font-size:13px;text-align:center;padding:12px">No trades yet</p>';return;}
+  el.innerHTML=trades.map(t=>`<div class="trade-row">
+    <div style="width:34px;height:34px;border-radius:9px;background:${t.direction==='LONG'?'rgba(16,185,129,.1)':'rgba(239,68,68,.1)'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i data-lucide="${t.direction==='LONG'?'trending-up':'trending-down'}" style="width:16px;height:16px;color:${t.direction==='LONG'?'#10b981':'#ef4444'}"></i>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+        <span class="mono" style="font-size:13px;font-weight:600;color:white">${t.asset}</span>
+        <span style="font-size:10px;background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;color:#64748b">${t.strategy}</span>
+        <span class="mono" style="font-size:12px;font-weight:600;color:${parseFloat(t.pnl)>=0?'#10b981':'#ef4444'};margin-left:auto">${parseFloat(t.pnl)>=0?'+':''}${parseFloat(t.pnl).toFixed(2)}%</span>
+      </div>
+      <p style="font-size:11px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.reasoning||''}</p>
+    </div>
+  </div>`).join('');
+  lucide.createIcons({nodes:[document.getElementById('trade-feed')]});
+}
+
+function renderTxs(txs){
+  const el=document.getElementById('recent-txs');
+  if(!txs.length){el.innerHTML='<p style="color:#334155;font-size:13px;text-align:center;padding:12px">No transactions yet</p>';return;}
+  const TI={deposit:'arrow-down-to-line',withdrawal:'arrow-up-from-line',payout:'gift',earnings:'trending-up',transfer_in:'arrow-right-left',referral_bonus:'users'};
+  const TC={deposit:'#10b981',withdrawal:'#f59e0b',payout:'#8b5cf6',earnings:'#10b981',transfer_in:'#60a5fa',referral_bonus:'#ec4899'};
+  const IS_CREDIT=['deposit','earnings','payout','referral_bonus'];
+  el.innerHTML=txs.map(t=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)">
+    <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <i data-lucide="${TI[t.type]||'circle'}" style="width:16px;height:16px;color:${TC[t.type]||'#64748b'}"></i>
+    </div>
+    <div style="flex:1"><p style="font-size:13px;font-weight:500;text-transform:capitalize">${(t.type||'').replace(/_/g,' ')}</p><p style="font-size:11px;color:#475569">${fmtDT(t.timestamp)}</p></div>
+    <div style="text-align:right"><p class="mono" style="font-size:13px;font-weight:600;color:${IS_CREDIT.includes(t.type)?'#10b981':'#f59e0b'}">${IS_CREDIT.includes(t.type)?'+':'-'}$${fmt(t.amountUSD||t.amount)}</p><p style="font-size:10px;color:#475569">${t.status}</p></div>
+  </div>`).join('');
+  lucide.createIcons({nodes:[el]});
+}
+
+function updateTicker(trades){
+  const items=trades.map(t=>`<span class="mono" style="font-size:11px;color:${parseFloat(t.pnl)>=0?'#10b981':'#ef4444'}">${t.asset} ${parseFloat(t.pnl)>=0?'▲':'▼'}${Math.abs(parseFloat(t.pnl)).toFixed(2)}%</span>`).join('<span style="color:#1e293b;margin:0 6px">·</span>');
+  document.getElementById('ticker').innerHTML=items+'<span style="margin:0 16px"></span>'+items;
+}
+
+function startCountdown(d){
+  function upd(){
+    const diff=new Date(d+'T00:05:00Z')-Date.now();
+    if(diff<=0){document.getElementById('countdown').textContent='Payout!';return;}
+    const dy=Math.floor(diff/86400000),h=Math.floor((diff%86400000)/3600000);
+    document.getElementById('countdown').textContent=dy+'d '+String(h).padStart(2,'0')+'h';
+  }
+  upd();setInterval(upd,60000);
+}
+
+function renderNotifs(list){
+  const el=document.getElementById('notif-list');
+  if(!list.length){el.innerHTML='<p style="color:#334155;font-size:14px;text-align:center;padding:20px">No notifications</p>';return;}
+  const tc={success:'#10b981',error:'#ef4444',warning:'#f59e0b',info:'#60a5fa'};
+  el.innerHTML=list.slice(0,15).map(n=>`<div style="padding:12px 0;border-bottom:1px solid rgba(255,255,255,.04);opacity:${n.read?0.5:1}">
+    <div style="display:flex;align-items:flex-start;gap:10px">
+      <div style="width:6px;height:6px;border-radius:50%;background:${tc[n.type]||'#64748b'};flex-shrink:0;margin-top:6px"></div>
+      <div><p style="font-size:14px;font-weight:${n.read?'400':'600'}">${n.title}</p><p style="font-size:12px;color:#64748b;margin-top:2px">${n.message}</p></div>
+    </div>
+  </div>`).join('');
+}
+
+function openNotifs(){
+  document.getElementById('notif-sheet').classList.remove('hidden');
+}
+document.getElementById('notif-sheet').addEventListener('click',e=>{if(e.target===document.getElementById('notif-sheet'))document.getElementById('notif-sheet').classList.add('hidden');});
+
+async function markAllRead(){
+  await post('markNotifRead',{all:true});
+  document.getElementById('notif-dot').classList.add('hidden');
+  toast('Marked as read','success',2000);
+}
+
+async function doTransfer(){
+  const amt=parseFloat(document.getElementById('tf-amt').value)||0;
+  if(!amt||amt<=0){toast('Enter an amount','warning');return;}
+  if(amt>_walletBal){toast('Insufficient balance','error');return;}
+  const r=await post('transferToVault',{amount:amt});
+  if(!r.success){toast(r.error||'Transfer failed','error');return;}
+  toast('Transferred to vault!','success');
+  document.getElementById('tf-amt').value='';
+  await loadAll();
+}
+
+function toast(msg,type='info',dur=4000){
+  const wrap=document.getElementById('toast-wrap');const el=document.createElement('div');
+  el.className=`toast toast-${type}`;
+  const ic={success:'check-circle',error:'x-circle',warning:'alert-triangle',info:'info'}[type];
+  el.innerHTML=`<i data-lucide="${ic}" style="width:16px;height:16px;flex-shrink:0"></i><span style="flex:1">${msg}</span>`;
+  wrap.appendChild(el);lucide.createIcons({nodes:[el]});
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300);},dur);
+}
+
+loadAll();
+setInterval(()=>api('getTrades').then(r=>{if(r.success){_allTrades=r.trades||[];renderTrades(_allTrades.slice(0,10));updateTicker(_allTrades.slice(0,8));lucide.createIcons({nodes:[document.getElementById('trade-feed')]});}},90000));
+</script>
+</body>
+</html>

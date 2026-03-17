@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#060d1a">
+<title>TradePulse — Create Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{background:#060d1a;font-family:'DM Sans',sans-serif;color:#f1f5f9;min-height:100vh}
+h1,h2,h3{font-family:'Syne',sans-serif}
+.mono{font-family:'DM Mono',monospace}
+/* HEADER */
+.hdr{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(6,13,26,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:14px 16px;display:flex;align-items:center;gap:12px}
+/* PROGRESS */
+.progress-track{height:3px;background:rgba(255,255,255,.08);border-radius:2px;flex:1}
+.progress-fill{height:100%;background:#10b981;border-radius:2px;transition:width .4s ease}
+/* CONTENT */
+.page{padding:72px 16px 32px}
+.step-title{font-size:24px;font-weight:700;margin-bottom:6px}
+.step-sub{color:#64748b;font-size:15px;margin-bottom:24px;line-height:1.5}
+/* INPUTS */
+.label{display:block;font-size:13px;font-weight:500;color:#94a3b8;margin-bottom:8px}
+.input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .15s;-webkit-appearance:none}
+.input:focus{border-color:#10b981;background:rgba(16,185,129,.05)}
+.input::placeholder{color:#334155}
+.field{margin-bottom:16px}
+/* BUTTONS */
+.btn{width:100%;padding:17px;border-radius:14px;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-green{background:#059669;color:white}
+.btn-green:active{background:#10b981}
+.btn-green:disabled{opacity:.5}
+.btn-ghost{background:rgba(255,255,255,.06);color:#94a3b8;border:1px solid rgba(255,255,255,.1)}
+.btn-row{display:flex;gap:10px;margin-top:24px}
+.btn-row .btn-ghost{width:auto;padding:17px 20px}
+/* COUNTRY LIST */
+.country-list{max-height:300px;overflow-y:auto;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(0,0,0,.3)}
+.c-item{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .12s;border-bottom:1px solid rgba(255,255,255,.04)}
+.c-item:last-child{border-bottom:none}
+.c-item:active,.c-item.sel{background:rgba(16,185,129,.08)}
+.c-item.sel p{color:#10b981}
+/* OTP */
+.otp-wrap{display:flex;gap:8px;justify-content:center;margin:20px 0}
+.otp-box{width:46px;height:56px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;text-align:center;font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:white;outline:none;transition:all .15s}
+.otp-box:focus{border-color:#10b981;background:rgba(16,185,129,.08)}
+/* COLORS */
+.color-dot{width:38px;height:38px;border-radius:50%;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.color-dot.sel{border-color:white;transform:scale(1.2)}
+/* STRENGTH */
+.strength-bars{display:flex;gap:4px;margin-top:8px}
+.sb{flex:1;height:3px;background:#1e293b;border-radius:2px;transition:background .3s}
+/* FEATURES */
+.feature{display:flex;align-items:center;gap:14px;padding:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;margin-bottom:10px}
+/* CALC TABLE */
+.calc-table{width:100%;border-collapse:collapse;font-size:13px}
+.calc-table th{padding:10px 12px;text-align:left;color:#64748b;font-weight:500;background:rgba(255,255,255,.03);font-family:'DM Sans',sans-serif}
+.calc-table td{padding:10px 12px;border-top:1px solid rgba(255,255,255,.04)}
+/* RANGE */
+input[type=range]{width:100%;accent-color:#10b981;height:4px}
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px}
+input[type=checkbox]{width:22px;height:22px;accent-color:#10b981}
+.hidden{display:none!important}
+/* TOAST */
+#toast-wrap{position:fixed;top:80px;left:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:13px 15px;border-radius:12px;border:1px solid;font-size:14px;font-weight:500;transform:translateY(-10px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.toast-info{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:#93c5fd}
+.toast-warning{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <button id="back-btn" onclick="goBack()" style="background:none;border:none;cursor:pointer;color:#64748b;padding:2px;display:none">
+    <i data-lucide="arrow-left" style="width:22px;height:22px"></i>
+  </button>
+  <div class="progress-track"><div class="progress-fill" id="prog" style="width:14%"></div></div>
+  <span style="font-size:12px;color:#475569;white-space:nowrap" id="step-label">1 / 7</span>
+</div>
+
+<div class="page">
+
+  <!-- STEP 0: WELCOME -->
+  <div id="s0">
+    <div style="text-align:center;padding:16px 0 28px">
+      <div style="width:72px;height:72px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <i data-lucide="trending-up" style="width:34px;height:34px;color:#10b981"></i>
+      </div>
+      <h1 style="font-size:26px;font-weight:800;margin-bottom:10px">Welcome to TradePulse</h1>
+      <p style="color:#64748b;font-size:15px;line-height:1.6">AI-powered trading. Earn 15% daily returns, paid every Saturday.</p>
+    </div>
+    <div class="feature">
+      <div style="width:38px;height:38px;background:rgba(16,185,129,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="bot" style="width:20px;height:20px;color:#10b981"></i></div>
+      <div><p style="font-weight:500;margin-bottom:2px">AI Trading Agent</p><p style="font-size:13px;color:#64748b">Automated crypto, forex & stocks</p></div>
+    </div>
+    <div class="feature">
+      <div style="width:38px;height:38px;background:rgba(96,165,250,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="percent" style="width:20px;height:20px;color:#60a5fa"></i></div>
+      <div><p style="font-weight:500;margin-bottom:2px">15% Daily Returns</p><p style="font-size:13px;color:#64748b">Compound earnings in your vault</p></div>
+    </div>
+    <div class="feature">
+      <div style="width:38px;height:38px;background:rgba(245,158,11,.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0"><i data-lucide="calendar-check" style="width:20px;height:20px;color:#f59e0b"></i></div>
+      <div><p style="font-weight:500;margin-bottom:2px">Saturday Payouts</p><p style="font-size:13px;color:#64748b">Withdraw on weekends</p></div>
+    </div>
+    <button class="btn btn-green" onclick="go(1)" style="margin-top:24px">Get Started</button>
+    <p style="text-align:center;color:#475569;font-size:14px;margin-top:14px">Already have an account? <a href="index.html" style="color:#10b981;text-decoration:none;font-weight:500">Sign in</a></p>
+  </div>
+
+  <!-- STEP 1: COUNTRY -->
+  <div id="s1" class="hidden">
+    <h2 class="step-title">Where are you from?</h2>
+    <p class="step-sub">Sets your local currency & payment options</p>
+    <div class="field" style="position:relative">
+      <i data-lucide="search" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#475569;pointer-events:none"></i>
+      <input type="text" class="input" style="padding-left:44px" placeholder="Search countries..." oninput="filterC(this.value)">
+    </div>
+    <div class="country-list" id="clist"><div style="padding:40px;text-align:center;color:#334155"><i data-lucide="loader-2" style="width:24px;height:24px;display:block;margin:0 auto;animation:spin 1s linear infinite"></i></div></div>
+    <div id="c-sel-info" class="hidden" style="margin-top:12px;padding:12px 16px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:12px">
+      <p style="color:#10b981;font-size:14px;font-weight:500" id="c-sel-name"></p>
+      <p style="color:#64748b;font-size:12px;margin-top:2px" id="c-sel-curr"></p>
+    </div>
+    <button class="btn btn-green" id="s1-next" onclick="go(2)" style="margin-top:20px" disabled>Continue</button>
+  </div>
+
+  <!-- STEP 2: REGISTER FORM -->
+  <div id="s2" class="hidden">
+    <h2 class="step-title">Create your account</h2>
+    <p class="step-sub">Fill in your personal details</p>
+    <div class="field"><label class="label">Full name *</label><input id="r-name" type="text" class="input" placeholder="John Doe" autocomplete="name"></div>
+    <div class="field"><label class="label">Phone number</label><input id="r-phone" type="tel" class="input" placeholder="+234 900 000 0000" autocomplete="tel" inputmode="tel"></div>
+    <div class="field"><label class="label">Email address *</label><input id="r-email" type="email" class="input" placeholder="you@example.com" autocomplete="email" inputmode="email"></div>
+    <div class="field">
+      <label class="label">Password *</label>
+      <div style="position:relative">
+        <input id="r-pw" type="password" class="input" placeholder="Min. 6 characters" oninput="pwStrength(this.value)" style="padding-right:48px" autocomplete="new-password">
+        <button type="button" onclick="togglePwd('r-pw',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#475569"><i data-lucide="eye" style="width:20px;height:20px"></i></button>
+      </div>
+      <div class="strength-bars"><div class="sb" id="sb0"></div><div class="sb" id="sb1"></div><div class="sb" id="sb2"></div><div class="sb" id="sb3"></div></div>
+      <p id="pw-lbl" style="font-size:12px;color:#475569;margin-top:4px">Enter a password</p>
+    </div>
+    <div class="field"><label class="label">Confirm password *</label><input id="r-pwc" type="password" class="input" placeholder="Repeat password" autocomplete="new-password"></div>
+    <div class="field"><label class="label">Referral code (optional)</label><input id="r-ref" type="text" class="input" placeholder="XXXX1234" style="text-transform:uppercase"></div>
+    <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;padding:4px 0">
+      <input type="checkbox" id="r-terms" style="width:20px;height:20px;accent-color:#10b981;flex-shrink:0;margin-top:2px">
+      <span style="font-size:14px;color:#94a3b8;line-height:1.5">I agree to the <button type="button" onclick="showTerms()" style="color:#10b981;background:none;border:none;cursor:pointer;font-size:14px;padding:0">Terms of Service</button> and understand this is a simulated platform</span>
+    </label>
+    <button class="btn btn-green" onclick="doRegister()" id="reg-btn" style="margin-top:20px">Create Account</button>
+  </div>
+
+  <!-- STEP 3: OTP -->
+  <div id="s3" class="hidden">
+    <div style="text-align:center;padding:8px 0 24px">
+      <div style="width:64px;height:64px;background:rgba(16,185,129,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+        <i data-lucide="mail" style="width:28px;height:28px;color:#10b981"></i>
+      </div>
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:6px">Verify your email</h2>
+      <p style="color:#64748b;font-size:14px">Code sent to <strong style="color:#10b981" id="otp-email"></strong></p>
+    </div>
+    <div class="otp-wrap">
+      <input class="otp-box reg-otp" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box reg-otp" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box reg-otp" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box reg-otp" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box reg-otp" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box reg-otp" maxlength="1" type="text" inputmode="numeric">
+    </div>
+    <button class="btn btn-green" id="otp-btn" onclick="doOTP()">Verify & Continue</button>
+  </div>
+
+  <!-- STEP 4: AVATAR -->
+  <div id="s4" class="hidden">
+    <h2 class="step-title">Personalise</h2>
+    <p class="step-sub">Choose your avatar color</p>
+    <div style="text-align:center;margin-bottom:24px">
+      <div id="av-prev" style="width:80px;height:80px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:white;margin:0 auto 16px;font-family:'Syne',sans-serif"></div>
+      <div id="av-colors" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap"></div>
+    </div>
+    <div class="toggle-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <i data-lucide="bell" style="width:18px;height:18px;color:#94a3b8"></i>
+        <span style="font-size:14px">Email notifications</span>
+      </div>
+      <input type="checkbox" id="notif-tog" checked>
+    </div>
+    <button class="btn btn-green" onclick="go(5)" style="margin-top:20px">Continue</button>
+  </div>
+
+  <!-- STEP 5: CALCULATOR -->
+  <div id="s5" class="hidden">
+    <h2 class="step-title">See your earnings</h2>
+    <p class="step-sub">Drag the slider to calculate</p>
+    <div style="padding:16px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:14px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="color:#94a3b8;font-size:14px">Deposit amount</span>
+        <span class="mono" style="color:#10b981;font-size:22px;font-weight:700" id="calc-disp">$500</span>
+      </div>
+      <input type="range" id="calc-slider" min="5" max="10000" value="500" step="5" oninput="calcEarnings(this.value)" style="width:100%">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#334155;margin-top:4px"><span>$5</span><span>$10,000</span></div>
+    </div>
+    <div style="overflow:hidden;border-radius:12px;border:1px solid rgba(255,255,255,.08)">
+      <table class="calc-table"><thead><tr><th>Day</th><th>Balance</th><th>Gain</th><th>Total</th></tr></thead><tbody id="calc-body"></tbody></table>
+    </div>
+    <button class="btn btn-green" onclick="go(6)" style="margin-top:20px">Make First Deposit</button>
+    <button onclick="skip()" style="width:100%;padding:14px;background:none;border:none;color:#334155;font-size:14px;cursor:pointer;margin-top:8px;font-family:'DM Sans',sans-serif">Skip for now</button>
+  </div>
+
+  <!-- STEP 6: DEPOSIT -->
+  <div id="s6" class="hidden">
+    <div style="text-align:center;padding:8px 0 24px">
+      <div style="width:64px;height:64px;background:rgba(16,185,129,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+        <i data-lucide="arrow-down-to-line" style="width:28px;height:28px;color:#10b981"></i>
+      </div>
+      <h2 style="font-size:22px;font-weight:700;margin-bottom:6px">Fund your wallet</h2>
+      <p style="color:#64748b;font-size:14px">Make your first deposit to start earning</p>
+    </div>
+    <div style="padding:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;padding:6px 0"><span style="color:#64748b;font-size:14px">Country</span><span style="font-weight:500" id="dep-country"></span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid rgba(255,255,255,.06)"><span style="color:#64748b;font-size:14px">Currency</span><span class="mono" style="color:#10b981;font-weight:600" id="dep-currency"></span></div>
+    </div>
+    <div class="field">
+      <label class="label">Amount</label>
+      <input id="dep-amt" type="number" class="input" placeholder="0.00" oninput="calcUSD()" inputmode="decimal">
+      <p style="font-size:13px;color:#64748b;margin-top:6px">≈ <span class="mono" style="color:#10b981" id="dep-usd">$0.00</span> USD</p>
+    </div>
+    <button class="btn btn-green" onclick="doDeposit()">
+      <i data-lucide="credit-card" style="width:18px;height:18px"></i> Pay with Flutterwave
+    </button>
+    <button onclick="skip()" style="width:100%;padding:14px;background:none;border:none;color:#334155;font-size:14px;cursor:pointer;margin-top:8px;font-family:'DM Sans',sans-serif">Skip — deposit later</button>
+  </div>
+
+</div><!-- /page -->
+
+<!-- TERMS OVERLAY -->
+<div id="terms-overlay" class="hidden" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:flex-end">
+  <div style="background:#0c1628;border-radius:20px 20px 0 0;padding:24px;width:100%;max-height:70vh;overflow-y:auto">
+    <h3 style="font-size:18px;font-weight:700;margin-bottom:14px">Terms of Service</h3>
+    <p style="color:#94a3b8;font-size:14px;line-height:1.7">TradePulse is a simulated investment platform. The 15% daily return is simulated and does not represent a guaranteed real-world return. All trading activity is AI-generated simulation. Deposits and withdrawals are processed via Flutterwave's secure gateway. You are responsible for keeping your credentials secure. The platform reserves the right to modify terms at any time.</p>
+    <button onclick="document.getElementById('terms-overlay').classList.add('hidden')" style="width:100%;margin-top:20px;padding:16px;background:#059669;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif">Got it</button>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbzOh7BafxwXSmNNNn01pu-KtdXoLKqzxMiZxXsc-ETf1p7URqMooz4D1WhsgN2CjOpx/exec';
+let _step=0,_uid='',_countries=[],_selC=null,_color='#10b981';
+const COLORS=['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4','#ec4899','#f97316'];
+
+// Redirect if already logged in
+try{const s=JSON.parse(sessionStorage.getItem('tp_s')||'null');if(s?.t)location.href='dashboard.html';}catch(e){}
+
+async function post(action,body){
+  try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,...body})});return await r.json();}
+  catch(e){return{success:false,error:'Network error'};}
+}
+async function get(action,p={}){
+  const url=new URL(API);url.searchParams.set('action',action);
+  Object.entries(p).forEach(([k,v])=>url.searchParams.set(k,v));
+  try{return await(await fetch(url)).json();}catch(e){return{success:false,error:'Network error'};}
+}
+
+function go(n){
+  document.getElementById('s'+_step)?.classList.add('hidden');
+  _step=n;
+  document.getElementById('s'+n)?.classList.remove('hidden');
+  document.getElementById('prog').style.width=((n+1)/7*100)+'%';
+  document.getElementById('step-label').textContent=(n+1)+' / 7';
+  document.getElementById('back-btn').style.display=n>0?'block':'none';
+  if(n===1&&!_countries.length)loadCountries();
+  if(n===4)setupColors();
+  if(n===5){calcEarnings(500);document.getElementById('calc-slider').value=500;}
+  if(n===6)setupDeposit();
+  window.scrollTo(0,0);
+  lucide.createIcons();
+}
+
+function goBack(){if(_step>0)go(_step-1);}
+
+async function loadCountries(){
+  const r=await get('getCountries');
+  if(!r.success){toast('Failed to load countries','error');return;}
+  _countries=r.countries||[];
+  renderC(_countries);
+}
+
+function getFlagEmoji(c){return String.fromCodePoint(...[...c.toUpperCase()].map(l=>127397+l.charCodeAt()));}
+
+function renderC(list){
+  const el=document.getElementById('clist');
+  if(!list.length){el.innerHTML='<p style="padding:24px;text-align:center;color:#334155">No results</p>';return;}
+  el.innerHTML=list.map(c=>`<div class="c-item ${_selC?.countryCode===c.countryCode?'sel':''}" onclick='pickC(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
+    <span style="font-size:22px">${getFlagEmoji(c.countryCode)}</span>
+    <div><p style="font-size:15px;font-weight:500;color:${_selC?.countryCode===c.countryCode?'#10b981':'#f1f5f9'}">${c.countryName}</p>
+    <p style="font-size:12px;color:#475569">${c.currencyCode} · ${c.currencySymbol}</p></div>
+  </div>`).join('');
+}
+
+function filterC(q){renderC(_countries.filter(c=>c.countryName.toLowerCase().includes(q.toLowerCase())||c.currencyCode.toLowerCase().includes(q.toLowerCase())));}
+
+function pickC(c){
+  _selC=c;
+  document.getElementById('s1-next').disabled=false;
+  document.getElementById('c-sel-info').classList.remove('hidden');
+  document.getElementById('c-sel-name').textContent=getFlagEmoji(c.countryCode)+' '+c.countryName;
+  document.getElementById('c-sel-curr').textContent=c.currencyCode+' ('+c.currencySymbol+') · '+c.currencySymbol+(parseFloat(c.rateToUSD)||1).toFixed(2)+' = $1 USD';
+  renderC(_countries);
+}
+
+function pwStrength(v){
+  let s=0;
+  if(v.length>=6)s++;if(v.length>=8)s++;if(/[A-Z]/.test(v)&&/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const cols=['#ef4444','#f59e0b','#3b82f6','#10b981'];
+  const lbls=['Too short','Weak','Fair','Good','Strong'];
+  ['sb0','sb1','sb2','sb3'].forEach((id,i)=>{document.getElementById(id).style.background=i<s?(cols[s-1]||'#ef4444'):'#1e293b';});
+  document.getElementById('pw-lbl').textContent=lbls[s]||'Too short';
+  document.getElementById('pw-lbl').style.color=cols[s-1]||'#475569';
+}
+
+function togglePwd(id,btn){const i=document.getElementById(id);const t=i.type==='text';i.type=t?'password':'text';btn.innerHTML=`<i data-lucide="${t?'eye':'eye-off'}" style="width:20px;height:20px"></i>`;lucide.createIcons({nodes:[btn]});}
+
+function fp(){let h=0;const d=[navigator.userAgent,screen.width+'x'+screen.height].join('|');for(let i=0;i<d.length;i++){h=((h<<5)-h)+d.charCodeAt(i);h|=0;}return h.toString(16);}
+
+async function doRegister(){
+  const name=document.getElementById('r-name').value.trim();
+  const email=document.getElementById('r-email').value.trim();
+  const pw=document.getElementById('r-pw').value;
+  const pwc=document.getElementById('r-pwc').value;
+  const phone=document.getElementById('r-phone').value.trim();
+  const ref=document.getElementById('r-ref').value.trim();
+  const terms=document.getElementById('r-terms').checked;
+  if(!name||!email||!pw){toast('Fill all required fields','warning');return;}
+  if(pw!==pwc){toast('Passwords do not match','error');return;}
+  if(pw.length<6){toast('Password must be at least 6 characters','error');return;}
+  if(!terms){toast('Accept the Terms of Service','warning');return;}
+  if(!_selC){toast('Go back and select your country','warning');go(1);return;}
+  const btn=document.getElementById('reg-btn');btn.disabled=true;btn.textContent='Creating account...';
+  const r=await post('register',{name,email,password:pw,phone,country:_selC.countryCode,currency:_selC.currencyCode,referralCode:ref,deviceFingerprint:fp()});
+  btn.disabled=false;btn.textContent='Create Account';
+  if(!r.success){toast(r.error||'Registration failed','error');return;}
+  _uid=r.userId;
+  document.getElementById('otp-email').textContent=email;
+  go(3);
+  toast('Account created! Check your email','success');
+}
+
+async function doOTP(){
+  const boxes=document.querySelectorAll('.reg-otp');
+  const code=Array.from(boxes).map(b=>b.value).join('');
+  if(code.length!==6){toast('Enter all 6 digits','warning');return;}
+  const btn=document.getElementById('otp-btn');btn.disabled=true;btn.textContent='Verifying...';
+  const r=await post('verifyOTP',{userId:_uid,token:code,deviceFingerprint:fp()});
+  btn.disabled=false;btn.textContent='Verify & Continue';
+  if(!r.success){toast(r.error||'Invalid code','error');return;}
+  sessionStorage.setItem('tp_s',JSON.stringify({t:r.sessionToken,u:r.user}));
+  toast('Email verified!','success');
+  go(4);
+}
+
+function setupColors(){
+  document.getElementById('av-colors').innerHTML=COLORS.map(c=>`<div class="color-dot ${c===_color?'sel':''}" style="background:${c}" onclick="pickColor('${c}')"></div>`).join('');
+  updateAvatar();
+}
+function pickColor(c){_color=c;setupColors();}
+function updateAvatar(){
+  const name=document.getElementById('r-name')?.value||'U';
+  const ini=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'?';
+  document.getElementById('av-prev').style.background=_color;
+  document.getElementById('av-prev').textContent=ini;
+}
+
+function calcEarnings(v){
+  v=parseFloat(v);
+  document.getElementById('calc-disp').textContent='$'+Number(v).toLocaleString();
+  let bal=v,rows='';
+  for(let d=1;d<=7;d++){
+    const g=bal*.15;bal+=g;
+    rows+=`<tr><td style="padding:10px 12px;color:#94a3b8">Day ${d}</td><td style="padding:10px 12px;text-align:right;font-family:'DM Mono',monospace;font-size:12px">$${bal.toFixed(2)}</td><td style="padding:10px 12px;text-align:right;color:#10b981;font-family:'DM Mono',monospace;font-size:12px">+$${g.toFixed(2)}</td><td style="padding:10px 12px;text-align:right;color:#10b981;font-family:'DM Mono',monospace;font-size:12px">+$${(bal-v).toFixed(2)}</td></tr>`;
+  }
+  document.getElementById('calc-body').innerHTML=rows;
+}
+
+function setupDeposit(){
+  if(_selC){
+    document.getElementById('dep-country').textContent=getFlagEmoji(_selC.countryCode)+' '+_selC.countryName;
+    document.getElementById('dep-currency').textContent=_selC.currencyCode+' ('+_selC.currencySymbol+')';
+  }
+}
+function calcUSD(){
+  const amt=parseFloat(document.getElementById('dep-amt').value)||0;
+  const rate=parseFloat(_selC?.rateToUSD||1);
+  const usd=_selC?.currencyCode==='USD'?amt:amt/rate;
+  document.getElementById('dep-usd').textContent='$'+usd.toFixed(2);
+}
+
+async function doDeposit(){
+  const amt=parseFloat(document.getElementById('dep-amt').value)||0;
+  if(amt<=0){toast('Enter an amount','warning');return;}
+  const sess=JSON.parse(sessionStorage.getItem('tp_s')||'null');
+  if(!sess?.t){skip();return;}
+  const r=await post('initiateDeposit',{token:sess.t,amount:amt,currency:_selC?.currencyCode||'USD'});
+  if(!r.success){toast(r.error||'Failed','error');return;}
+  window.open(r.paymentUrl,'_blank');
+  toast('Payment page opened','info');
+  setTimeout(()=>location.href='dashboard.html',1500);
+}
+
+function skip(){location.href='dashboard.html';}
+function showTerms(){document.getElementById('terms-overlay').classList.remove('hidden');}
+
+// OTP wiring
+document.querySelectorAll('.reg-otp').forEach((b,i,all)=>{
+  b.addEventListener('input',e=>{const v=e.target.value.replace(/\D/g,'');e.target.value=v.slice(0,1);if(v&&i<all.length-1)all[i+1].focus();if(Array.from(all).every(x=>x.value))doOTP();});
+  b.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!b.value&&i>0)all[i-1].focus();});
+  b.addEventListener('paste',e=>{e.preventDefault();const d=e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);d.split('').forEach((c,j)=>{if(all[j])all[j].value=c;});all[Math.min(d.length,5)].focus();});
+});
+
+// Referral from URL
+const ref=new URLSearchParams(location.search).get('ref');
+if(ref)setTimeout(()=>{const el=document.getElementById('r-ref');if(el)el.value=ref.toUpperCase();},200);
+
+function toast(msg,type='info',dur=4000){
+  const wrap=document.getElementById('toast-wrap');const el=document.createElement('div');
+  el.className=`toast toast-${type}`;
+  const ic={success:'check-circle',error:'x-circle',warning:'alert-triangle',info:'info'}[type];
+  el.innerHTML=`<i data-lucide="${ic}" style="width:16px;height:16px;flex-shrink:0"></i><span>${msg}</span>`;
+  wrap.appendChild(el);lucide.createIcons({nodes:[el]});
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300);},dur);
+}
+
+go(0);
+</script>
+</body>
+</html>

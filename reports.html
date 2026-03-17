@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="theme-color" content="#060d1a">
+<title>TradePulse — Reports</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#060d1a;font-family:"DM Sans",sans-serif;color:#f1f5f9;min-height:100vh;padding-bottom:80px}
+h2,h3{font-family:"Syne",sans-serif}.mono{font-family:"DM Mono",monospace}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,13,26,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.page{padding:70px 14px 12px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:12px}
+.btn{width:100%;padding:17px;border-radius:12px;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:"DM Sans",sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;text-decoration:none}
+.btn-green{background:#059669;color:white}.btn-green:active{background:#10b981}.btn-green:disabled{opacity:.5}
+.btn-ghost{background:rgba(255,255,255,.06);color:#e2e8f0;border:1px solid rgba(255,255,255,.1)}
+.input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;color:white;font-size:16px;outline:none;font-family:"DM Sans",sans-serif}
+.input:focus{border-color:#10b981}.input::placeholder{color:#334155}
+.label{display:block;font-size:13px;font-weight:500;color:#94a3b8;margin-bottom:8px}
+.field{margin-bottom:14px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.stat-row:last-child{border-bottom:none}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(6,13,26,.97);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.07);display:flex;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;text-decoration:none;color:#334155;font-size:10px;font-weight:500}
+.nav-item.active{color:#10b981}
+.hidden{display:none!important}
+#toast-wrap{position:fixed;top:74px;left:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid;font-size:14px;transform:translateY(-8px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.toast-warning{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d}
+.toast-info{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:#93c5fd}
+
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head><body>
+<div class="topbar">
+  <a href="dashboard.html" style="color:#64748b;display:flex;align-items:center"><i data-lucide="arrow-left" style="width:22px;height:22px"></i></a>
+  <h2 style="font-size:18px;font-weight:700;flex:1">Reports</h2>
+</div>
+<div class="page">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+    <div class="card" style="padding:14px"><p style="font-size:11px;color:#64748b;margin-bottom:4px">Total Deposited</p><p class="mono" style="color:white;font-size:18px;font-weight:700" id="r-dep">$0.00</p></div>
+    <div class="card" style="padding:14px"><p style="font-size:11px;color:#64748b;margin-bottom:4px">Total Earned</p><p class="mono" style="color:#10b981;font-size:18px;font-weight:700" id="r-earn">$0.00</p></div>
+    <div class="card" style="padding:14px"><p style="font-size:11px;color:#64748b;margin-bottom:4px">Total Withdrawn</p><p class="mono" style="color:#f59e0b;font-size:18px;font-weight:700" id="r-wd">$0.00</p></div>
+    <div class="card" style="padding:14px"><p style="font-size:11px;color:#64748b;margin-bottom:4px">ROI</p><p class="mono" style="color:#8b5cf6;font-size:18px;font-weight:700" id="r-roi">0%</p></div>
+  </div>
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <h3 style="font-size:15px;font-weight:700">Daily Earnings</h3>
+      <select id="range" onchange="updateChart(this.value)" style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:7px 10px;color:#94a3b8;font-size:13px;outline:none;font-family:'DM Sans',sans-serif"><option value="7">7d</option><option value="14">14d</option><option value="30" selected>30d</option></select>
+    </div>
+    <div style="height:180px"><canvas id="ec"></canvas></div>
+    <div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05)">
+      <div style="text-align:center"><p style="font-size:11px;color:#64748b">Best day</p><p class="mono" style="color:#10b981;font-weight:600" id="best-day">$0.00</p></div>
+      <div style="text-align:center"><p style="font-size:11px;color:#64748b">Daily avg</p><p class="mono" style="color:#e2e8f0;font-weight:600" id="avg-day">$0.00</p></div>
+      <div style="text-align:center"><p style="font-size:11px;color:#64748b">Period total</p><p class="mono" style="color:#60a5fa;font-weight:600" id="period-total">$0.00</p></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">Leaderboard</h3>
+    <div id="lb-list"><p style="color:#334155;font-size:14px;text-align:center;padding:12px">Loading...</p></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.05)">
+      <p style="font-size:13px;color:#94a3b8">Show me on leaderboard</p>
+      <input type="checkbox" id="lb-tog" onchange="toggleLB(this.checked)" style="width:22px;height:22px;accent-color:#10b981">
+    </div>
+  </div>
+</div>
+<nav class="bottom-nav"><a href="dashboard.html" class="nav-item active"><i data-lucide="home" style="width:22px;height:22px"></i><span>Home</span></a><a href="vault.html" class="nav-item"><i data-lucide="vault" style="width:22px;height:22px"></i><span>Vault</span></a><a href="deposit.html" class="nav-item"><div style="width:46px;height:46px;background:#059669;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:2px;margin-top:-18px;border:3px solid #060d1a"><i data-lucide="plus" style="width:22px;height:22px;color:white"></i></div><span>Deposit</span></a><a href="transactions.html" class="nav-item"><i data-lucide="list" style="width:22px;height:22px"></i><span>History</span></a><a href="profile.html" class="nav-item"><i data-lucide="user" style="width:22px;height:22px"></i><span>Profile</span></a></nav>
+<div id="toast-wrap"></div>
+<script>
+
+const API='https://script.google.com/macros/s/AKfycbzOh7BafxwXSmNNNn01pu-KtdXoLKqzxMiZxXsc-ETf1p7URqMooz4D1WhsgN2CjOpx/exec';
+let _sess=null;
+function getS(){try{return JSON.parse(sessionStorage.getItem('tp_s')||'null');}catch{return null;}}
+_sess=getS();if(!_sess?.t)location.href='index.html';
+async function api(a,p={}){const url=new URL(API);url.searchParams.set('action',a);url.searchParams.set('token',_sess.t);Object.entries(p).forEach(([k,v])=>url.searchParams.set(k,v));try{return await(await fetch(url)).json();}catch{return{success:false};}}
+async function post(a,b){try{return await(await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:a,token:_sess.t,...b})})).json();}catch{return{success:false,error:'Network error'};}}
+function fmt(n,d=2){return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtDT(s){if(!s)return'—';return new Date(s).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});}
+function fmtD(s){if(!s)return'—';return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function toast(m,t='info',d=4000){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className=`toast toast-${t}`;const ic={success:'check-circle',error:'x-circle',warning:'alert-triangle',info:'info'}[t];el.innerHTML=`<i data-lucide="${ic}" style="width:16px;height:16px;flex-shrink:0"></i><span>${m}</span>`;w.appendChild(el);lucide.createIcons({nodes:[el]});requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300);},d);}
+
+let _hist=[],_ec=null;
+Chart.defaults.color='#64748b';Chart.defaults.borderColor='rgba(255,255,255,.06)';
+async function init(){
+  const[ud,tx,eh,lb]=await Promise.all([api('getUser'),api('getTransactions',{limit:'200'}),api('getEarningsHistory'),api('getLeaderboard')]);
+  if(ud.success)document.getElementById('lb-tog').checked=ud.user?.showOnLeaderboard||false;
+  if(tx.success){
+    let dep=0,earn=0,wd=0;
+    (tx.transactions||[]).forEach(t=>{if(t.status!=='complete')return;const a=parseFloat(t.amountUSD||t.amount||0);if(t.type==='deposit')dep+=a;if(['earnings','payout','referral_bonus'].includes(t.type))earn+=a;if(t.type==='withdrawal')wd+=a;});
+    document.getElementById('r-dep').textContent='$'+fmt(dep);document.getElementById('r-earn').textContent='$'+fmt(earn);document.getElementById('r-wd').textContent='$'+fmt(wd);
+    document.getElementById('r-roi').textContent=dep>0?fmt(earn/dep*100,1)+'%':'0%';
+  }
+  if(eh.success){_hist=eh.history||[];updateChart(30);}
+  if(lb.success){
+    const list=lb.leaderboard||[];
+    const med=['🥇','🥈','🥉'];
+    document.getElementById('lb-list').innerHTML=list.length?list.map((u,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)"><span style="font-size:16px">${med[i]||'#'+(i+1)}</span><span style="flex:1;margin:0 10px;font-size:14px;color:#e2e8f0">${u.label}</span><span class="mono" style="color:#10b981;font-weight:600">+$${fmt(u.weekEarnings)}</span></div>`).join(''):'<p style="color:#334155;font-size:14px;text-align:center;padding:12px">No leaderboard data yet</p>';
+  }
+  lucide.createIcons();
+}
+function updateChart(d){
+  d=parseInt(d);const s=_hist.slice(-d);if(!s.length)return;
+  const earn=s.map(h=>parseFloat(h.dailyEarnings||0));
+  document.getElementById('best-day').textContent='$'+fmt(Math.max(...earn));
+  document.getElementById('avg-day').textContent='$'+fmt(earn.reduce((a,b)=>a+b,0)/earn.length);
+  document.getElementById('period-total').textContent='$'+fmt(earn.reduce((a,b)=>a+b,0));
+  if(_ec)_ec.destroy();
+  _ec=new Chart(document.getElementById('ec').getContext('2d'),{type:'bar',data:{labels:s.map(h=>(h.date||'').slice(5)),datasets:[{data:earn,backgroundColor:'rgba(16,185,129,.5)',borderColor:'#10b981',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8,font:{size:10}}},y:{ticks:{callback:v=>'$'+v,font:{size:10}}}}}});
+}
+async function toggleLB(v){await post('updateLeaderboardOpt',{show:v});toast(v?'Added to leaderboard':'Removed from leaderboard','success',2000);}
+init();
+</script></body></html>

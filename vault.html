@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"><meta name="theme-color" content="#060d1a">
+<title>TradePulse — Vault</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#060d1a;font-family:'DM Sans',sans-serif;color:#f1f5f9;min-height:100vh;padding-bottom:80px}
+h1,h2,h3{font-family:'Syne',sans-serif}.mono{font-family:'DM Mono',monospace}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(6,13,26,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.page{padding:70px 14px 12px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:18px;margin-bottom:12px}
+.btn{width:100%;padding:16px;border-radius:12px;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-green{background:#059669;color:white}.btn-green:active{background:#10b981}.btn-green:disabled{opacity:.5}
+.input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px;color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif}
+.input:focus{border-color:#10b981}.input::placeholder{color:#334155}
+.pct-btn{flex:1;padding:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:9px;font-size:13px;color:#94a3b8;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif}
+.pct-btn:active{background:rgba(16,185,129,.1);color:#10b981}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.stat-row:last-child{border-bottom:none}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(6,13,26,.97);backdrop-filter:blur(12px);border-top:1px solid rgba(255,255,255,.07);display:flex;padding:8px 0 max(8px,env(safe-area-inset-bottom))}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 2px;text-decoration:none;color:#334155;font-size:10px;font-weight:500}
+.nav-item.active{color:#f59e0b}
+.modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:flex-end}
+.modal-sheet{background:#0c1628;border-radius:20px 20px 0 0;padding:24px;width:100%}
+.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.15);border-radius:2px;margin:0 auto 20px}
+.hidden{display:none!important}
+#toast-wrap{position:fixed;top:74px;left:12px;right:12px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:12px;border:1px solid;font-size:14px;transform:translateY(-8px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.toast-warning{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="dashboard.html" style="color:#64748b;display:flex;align-items:center"><i data-lucide="arrow-left" style="width:22px;height:22px"></i></a>
+  <h2 style="font-size:18px;font-weight:700;flex:1">Trading Vault</h2>
+  <i data-lucide="vault" style="width:20px;height:20px;color:#f59e0b"></i>
+</div>
+<div class="page">
+
+  <!-- VAULT STATUS -->
+  <div class="card" style="background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(6,13,26,0));border-color:rgba(245,158,11,.2)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:44px;height:44px;background:rgba(245,158,11,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <i data-lucide="vault" style="width:22px;height:22px;color:#f59e0b"></i>
+      </div>
+      <div>
+        <p style="font-size:13px;color:#94a3b8" id="vault-status-label">Vault Balance</p>
+        <p class="mono" style="font-size:28px;font-weight:700;color:white" id="vault-main">$0.00</p>
+      </div>
+    </div>
+    <p style="font-size:13px;color:#94a3b8" id="vault-status-desc">Transfer funds to start earning 15% daily</p>
+    <div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.06)">
+      <div><p style="font-size:11px;color:#64748b">Payout date</p><p style="font-size:14px;font-weight:600;color:#f59e0b" id="vault-payout">—</p></div>
+      <div style="text-align:right"><p style="font-size:11px;color:#64748b">Daily rate</p><p class="mono" style="font-size:14px;font-weight:600;color:#10b981" id="vault-rate">15%</p></div>
+    </div>
+  </div>
+
+  <!-- TRANSFER CARD -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">Transfer to Vault</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:12px">
+      <span style="font-size:13px;color:#64748b">Wallet balance</span>
+      <span class="mono" style="color:#10b981;font-weight:600" id="wallet-avail">$0.00</span>
+    </div>
+    <div style="position:relative;margin-bottom:10px">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#475569;font-family:'DM Mono',monospace">$</span>
+      <input id="tf-amt" type="number" class="input" placeholder="0.00" style="padding-left:28px" oninput="calcPreview()" inputmode="decimal">
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="pct-btn" onclick="setPct(25)">25%</button>
+      <button class="pct-btn" onclick="setPct(50)">50%</button>
+      <button class="pct-btn" onclick="setPct(75)">75%</button>
+      <button class="pct-btn" onclick="setPct(100)">Max</button>
+    </div>
+    <div id="tf-preview" class="hidden" style="padding:12px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);border-radius:10px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span style="color:#64748b">Daily earnings</span><span class="mono" style="color:#10b981" id="prev-daily">$0.00</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#64748b">7-day total</span><span class="mono" style="color:#10b981" id="prev-7d">$0.00</span></div>
+    </div>
+    <button class="btn btn-green" id="tf-btn" onclick="doTransfer()">
+      <i data-lucide="lock" style="width:17px;height:17px"></i> Transfer to Vault
+    </button>
+  </div>
+
+  <!-- BREAKDOWN -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">Vault Breakdown</h3>
+    <div class="stat-row"><span style="color:#64748b;font-size:14px">Principal</span><span class="mono" style="font-weight:500" id="v-principal">$0.00</span></div>
+    <div class="stat-row"><span style="color:#64748b;font-size:14px">Total earned</span><span class="mono" style="color:#10b981;font-weight:600" id="v-earned">$0.00</span></div>
+    <div class="stat-row"><span style="color:#64748b;font-size:14px">Lifetime earnings</span><span class="mono" style="color:#8b5cf6;font-weight:500" id="v-lifetime">$0.00</span></div>
+    <div class="stat-row"><span style="color:#64748b;font-size:14px">Cycle started</span><span style="font-size:13px" id="v-cycle">—</span></div>
+  </div>
+
+  <!-- 7-DAY PROJECTION -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">7-Day Projection</h3>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr style="border-bottom:1px solid rgba(255,255,255,.07)">
+          <th style="padding:8px 6px;text-align:left;color:#475569;font-weight:500">Day</th>
+          <th style="padding:8px 6px;text-align:right;color:#475569;font-weight:500">Balance</th>
+          <th style="padding:8px 6px;text-align:right;color:#475569;font-weight:500">Gain</th>
+        </tr></thead>
+        <tbody id="proj-body"><tr><td colspan="3" style="padding:16px;text-align:center;color:#334155">No vault funds</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:14px">Vault Growth</h3>
+    <div style="height:160px;position:relative"><canvas id="vc"></canvas><div id="vc-empty" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center"><p style="color:#334155;font-size:13px">Transfer funds to see growth</p></div></div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <a href="dashboard.html" class="nav-item"><i data-lucide="home" style="width:22px;height:22px"></i><span>Home</span></a>
+  <a href="vault.html" class="nav-item active"><i data-lucide="vault" style="width:22px;height:22px"></i><span>Vault</span></a>
+  <a href="deposit.html" class="nav-item"><div style="width:46px;height:46px;background:#059669;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:2px;margin-top:-18px;border:3px solid #060d1a"><i data-lucide="plus" style="width:22px;height:22px;color:white"></i></div><span>Deposit</span></a>
+  <a href="transactions.html" class="nav-item"><i data-lucide="list" style="width:22px;height:22px"></i><span>History</span></a>
+  <a href="profile.html" class="nav-item"><i data-lucide="user" style="width:22px;height:22px"></i><span>Profile</span></a>
+</nav>
+<div id="toast-wrap"></div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbzOh7BafxwXSmNNNn01pu-KtdXoLKqzxMiZxXsc-ETf1p7URqMooz4D1WhsgN2CjOpx/exec';
+let _sess=null,_wallet=0,_vaultData=null,_rate=0.15;
+function getS(){try{return JSON.parse(sessionStorage.getItem('tp_s')||'null');}catch{return null;}}
+_sess=getS();if(!_sess?.t)location.href='index.html';
+async function api(a,p={}){const url=new URL(API);url.searchParams.set('action',a);url.searchParams.set('token',_sess.t);Object.entries(p).forEach(([k,v])=>url.searchParams.set(k,v));try{return await(await fetch(url)).json();}catch{return{success:false};}}
+async function post(a,b){try{return await(await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:a,token:_sess.t,...b})})).json();}catch{return{success:false,error:'Network error'};}}
+function fmt(n,d=2){return Number(n||0).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtD(s){return s?new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';}
+async function init(){
+  const[ud,vd,eh]=await Promise.all([api('getUser'),api('getVault'),api('getEarningsHistory')]);
+  if(ud.success){_wallet=parseFloat(ud.user.walletBalance||0);document.getElementById('wallet-avail').textContent='$'+fmt(_wallet);_rate=parseFloat(ud.config?.defaultDailyRate||0.15);document.getElementById('vault-rate').textContent=(_rate*100).toFixed(0)+'%';}
+  if(vd.success){
+    _vaultData=vd;const v=vd.vault;const bal=parseFloat(v.vaultBalance||0);
+    document.getElementById('vault-main').textContent='$'+fmt(bal);
+    document.getElementById('v-principal').textContent='$'+fmt(v.principalDeposited||0);
+    document.getElementById('v-earned').textContent='$'+fmt(v.totalEarned||0);
+    document.getElementById('v-lifetime').textContent='$'+fmt(v.lifetimeEarnings||0);
+    document.getElementById('v-cycle').textContent=fmtD(v.cycleStartDate);
+    document.getElementById('vault-payout').textContent=vd.payoutDate||'—';
+    if(bal>0){document.getElementById('vault-status-label').textContent='Vault Active';document.getElementById('vault-status-desc').textContent='Earning '+(_rate*100).toFixed(0)+'% daily until '+vd.payoutDate;}
+    if(vd.projected7Day?.length&&bal>0){
+      document.getElementById('proj-body').innerHTML=vd.projected7Day.map(r=>`<tr style="border-bottom:1px solid rgba(255,255,255,.03)"><td style="padding:8px 6px;color:#94a3b8">Day ${r.day}</td><td style="padding:8px 6px;text-align:right;font-family:'DM Mono',monospace;font-size:12px">$${fmt(r.balance)}</td><td style="padding:8px 6px;text-align:right;font-family:'DM Mono',monospace;font-size:12px;color:#10b981">+$${fmt(r.dailyGain)}</td></tr>`).join('');
+      document.getElementById('vc-empty').style.display='none';
+    }
+  }
+  if(eh.success&&eh.history?.length){
+    const h=eh.history.slice(-14);
+    new Chart(document.getElementById('vc').getContext('2d'),{type:'line',data:{labels:h.map(x=>x.date?.slice(5)),datasets:[{data:h.map(x=>parseFloat(x.vaultSnapshot)||0),borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.08)',borderWidth:2,fill:true,tension:.4,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}});
+    document.getElementById('vc-empty').style.display='none';
+  }
+  lucide.createIcons();
+}
+function setPct(p){const v=((_wallet*p)/100).toFixed(2);document.getElementById('tf-amt').value=v;calcPreview();}
+function calcPreview(){
+  const amt=parseFloat(document.getElementById('tf-amt').value)||0;
+  if(amt>0){document.getElementById('tf-preview').classList.remove('hidden');document.getElementById('prev-daily').textContent='$'+fmt(amt*_rate);let b=amt;for(let i=0;i<7;i++)b*=(1+_rate);document.getElementById('prev-7d').textContent='$'+fmt(b-amt);}
+  else document.getElementById('tf-preview').classList.add('hidden');
+}
+async function doTransfer(){
+  const amt=parseFloat(document.getElementById('tf-amt').value)||0;
+  if(!amt||amt<=0){toast('Enter an amount','warning');return;}
+  if(amt>_wallet){toast('Insufficient balance','error');return;}
+  const btn=document.getElementById('tf-btn');btn.disabled=true;btn.textContent='Transferring...';
+  const r=await post('transferToVault',{amount:amt});
+  btn.disabled=false;btn.innerHTML='<i data-lucide="lock" style="width:17px;height:17px"></i> Transfer to Vault';lucide.createIcons({nodes:[btn]});
+  if(!r.success){toast(r.error||'Failed','error');return;}
+  toast('Transfer successful!','success');document.getElementById('tf-amt').value='';document.getElementById('tf-preview').classList.add('hidden');init();
+}
+function toast(m,t='info',d=4000){const w=document.getElementById('toast-wrap');const el=document.createElement('div');el.className=`toast toast-${t}`;el.innerHTML=`<span>${m}</span>`;w.appendChild(el);requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300);},d);}
+init();
+</script>
+</body></html>

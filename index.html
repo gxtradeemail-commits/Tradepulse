@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="theme-color" content="#060d1a">
+<title>TradePulse — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{background:#060d1a;font-family:'DM Sans',sans-serif;color:#f1f5f9;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+h1,h2,h3{font-family:'Syne',sans-serif}
+.mono{font-family:'DM Mono',monospace}
+.logo-wrap{text-align:center;margin-bottom:32px}
+.logo-icon{width:68px;height:68px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.logo-name{font-size:28px;font-weight:800;color:white}
+.logo-sub{font-size:13px;color:#64748b;margin-top:3px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:24px;width:100%;max-width:400px}
+.label{display:block;font-size:13px;font-weight:500;color:#94a3b8;margin-bottom:8px}
+.input{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;color:white;font-size:16px;outline:none;font-family:'DM Sans',sans-serif;transition:border-color .15s}
+.input:focus{border-color:#10b981;background:rgba(16,185,129,.06)}
+.input::placeholder{color:#334155}
+.input-wrap{position:relative;margin-bottom:16px}
+.eye-btn{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#475569;padding:4px}
+.btn{width:100%;padding:17px;border-radius:14px;font-size:16px;font-weight:700;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;margin-top:6px}
+.btn-green{background:#059669;color:white}
+.btn-green:active{background:#10b981;transform:scale(0.99)}
+.btn-green:disabled{opacity:.5}
+.divider{text-align:center;color:#334155;font-size:13px;margin:16px 0}
+.link-text{color:#10b981;text-decoration:none;font-weight:500}
+.otp-wrap{display:flex;gap:8px;justify-content:center;margin:20px 0}
+.otp-box{width:46px;height:56px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;text-align:center;font-size:24px;font-weight:700;font-family:'DM Mono',monospace;color:white;outline:none;transition:all .15s}
+.otp-box:focus{border-color:#10b981;background:rgba(16,185,129,.08)}
+.hidden{display:none!important}
+.back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:#64748b;font-size:14px;cursor:pointer;padding:0 0 16px;font-family:'DM Sans',sans-serif}
+#toast-wrap{position:fixed;top:16px;left:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;border:1px solid;backdrop-filter:blur(12px);font-size:14px;font-weight:500;transform:translateY(-20px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-success{background:rgba(16,185,129,.12);border-color:rgba(16,185,129,.3);color:#6ee7b7}
+.toast-error{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:#fca5a5}
+.toast-info{background:rgba(96,165,250,.12);border-color:rgba(96,165,250,.3);color:#93c5fd}
+.toast-warning{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:#fcd34d}
+</style>
+</head>
+<body>
+
+<div class="logo-wrap">
+  <div class="logo-icon"><i data-lucide="trending-up" style="width:32px;height:32px;color:#10b981"></i></div>
+  <div class="logo-name">TradePulse</div>
+  <div class="logo-sub">AI-Powered Trading Platform</div>
+</div>
+
+<div class="card">
+  <!-- LOGIN FORM -->
+  <div id="step-login">
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:6px">Welcome back</h2>
+    <p style="color:#64748b;font-size:14px;margin-bottom:22px">Sign in to your account</p>
+    <div class="input-wrap">
+      <label class="label">Email address</label>
+      <input id="email" type="email" class="input" placeholder="you@example.com" autocomplete="email" inputmode="email">
+    </div>
+    <div>
+      <label class="label">Password</label>
+      <div class="input-wrap">
+        <input id="password" type="password" class="input" placeholder="••••••••" autocomplete="current-password" style="padding-right:48px">
+        <button class="eye-btn" onclick="togglePwd('password',this)" type="button">
+          <i data-lucide="eye" style="width:20px;height:20px"></i>
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-green" id="login-btn" onclick="doLogin()">
+      <span id="login-label">Sign In</span>
+    </button>
+    <div class="divider">Don't have an account? <a href="register.html" class="link-text">Create one</a></div>
+  </div>
+
+  <!-- OTP STEP -->
+  <div id="step-otp" class="hidden">
+    <button class="back-btn" onclick="showStep('login')">
+      <i data-lucide="arrow-left" style="width:16px;height:16px"></i> Back
+    </button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:56px;height:56px;background:rgba(16,185,129,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+        <i data-lucide="mail" style="width:24px;height:24px;color:#10b981"></i>
+      </div>
+      <h2 style="font-size:20px;font-weight:700">Check your email</h2>
+      <p style="color:#64748b;font-size:14px;margin-top:6px">Code sent to <strong style="color:#10b981" id="otp-email-display"></strong></p>
+    </div>
+    <div class="otp-wrap">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+      <input class="otp-box" maxlength="1" type="text" inputmode="numeric">
+    </div>
+    <button class="btn btn-green" id="otp-btn" onclick="doVerifyOTP()">Verify Code</button>
+    <div class="divider"><button id="resend-btn" onclick="doResend()" style="background:none;border:none;cursor:pointer;font-size:14px;font-family:'DM Sans',sans-serif">Didn't get it? <span style="color:#10b981;font-weight:500">Resend code</span></button></div>
+  </div>
+</div>
+
+<p style="color:#1e293b;font-size:12px;margin-top:20px;text-align:center">© 2025 TradePulse. Investment simulation only.</p>
+
+<div id="toast-wrap"></div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbzOh7BafxwXSmNNNn01pu-KtdXoLKqzxMiZxXsc-ETf1p7URqMooz4D1WhsgN2CjOpx/exec';
+let _uid='';
+
+// Redirect if already logged in
+try{const s=JSON.parse(sessionStorage.getItem('tp_s')||'null');if(s?.t)location.href='dashboard.html';}catch(e){}
+
+async function post(action,body){
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,...body})});
+    return await r.json();
+  }catch(e){return{success:false,error:'Network error'};}
+}
+
+function showStep(s){
+  document.getElementById('step-login').classList.toggle('hidden',s!=='login');
+  document.getElementById('step-otp').classList.toggle('hidden',s!=='otp');
+}
+
+function togglePwd(id,btn){
+  const i=document.getElementById(id);const t=i.type==='text';i.type=t?'password':'text';
+  btn.innerHTML=`<i data-lucide="${t?'eye':'eye-off'}" style="width:20px;height:20px"></i>`;
+  lucide.createIcons({nodes:[btn]});
+}
+
+function fp(){let h=0;const d=[navigator.userAgent,screen.width+'x'+screen.height,navigator.language].join('|');for(let i=0;i<d.length;i++){h=((h<<5)-h)+d.charCodeAt(i);h|=0;}return h.toString(16);}
+
+async function doLogin(){
+  const email=document.getElementById('email').value.trim();
+  const pw=document.getElementById('password').value;
+  if(!email||!pw){toast('Fill in all fields','warning');return;}
+  const btn=document.getElementById('login-btn');
+  btn.disabled=true;document.getElementById('login-label').textContent='Signing in...';
+  const r=await post('login',{email,password:pw,deviceFingerprint:fp()});
+  btn.disabled=false;document.getElementById('login-label').textContent='Sign In';
+  if(!r.success){toast(r.error||'Login failed','error');return;}
+  _uid=r.userId;
+  document.getElementById('otp-email-display').textContent=email;
+  showStep('otp');
+  document.querySelectorAll('.otp-box')[0].focus();
+  toast('Code sent to your email','info');
+}
+
+async function doVerifyOTP(){
+  const boxes=document.querySelectorAll('.otp-box');
+  const code=Array.from(boxes).map(b=>b.value).join('');
+  if(code.length!==6){toast('Enter all 6 digits','warning');return;}
+  const btn=document.getElementById('otp-btn');
+  btn.disabled=true;btn.textContent='Verifying...';
+  const r=await post('verifyOTP',{userId:_uid,token:code,deviceFingerprint:fp()});
+  btn.disabled=false;btn.textContent='Verify Code';
+  if(!r.success){toast(r.error||'Invalid code','error');return;}
+  sessionStorage.setItem('tp_s',JSON.stringify({t:r.sessionToken,u:r.user}));
+  toast('Login successful!','success');
+  setTimeout(()=>{location.href=r.user?.role==='admin'?'admin/dashboard.html':'dashboard.html';},600);
+}
+
+async function doResend(){
+  if(!_uid)return;
+  const btn=document.getElementById('resend-btn');btn.disabled=true;
+  const r=await post('resendOTP',{userId:_uid});
+  if(r.success)toast('New code sent','success');
+  else toast(r.error||'Failed','error');
+  let s=60;const iv=setInterval(()=>{
+    btn.innerHTML=`<span style="color:#334155">Resend in ${--s}s</span>`;
+    if(s<=0){clearInterval(iv);btn.disabled=false;btn.innerHTML='Didn\'t get it? <span style="color:#10b981;font-weight:500">Resend code</span>';}
+  },1000);
+}
+
+// OTP box navigation
+document.querySelectorAll('.otp-box').forEach((b,i,all)=>{
+  b.addEventListener('input',e=>{
+    const v=e.target.value.replace(/\D/g,'');e.target.value=v.slice(0,1);
+    if(v&&i<all.length-1)all[i+1].focus();
+    if(Array.from(all).every(x=>x.value))doVerifyOTP();
+  });
+  b.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!b.value&&i>0)all[i-1].focus();});
+  b.addEventListener('paste',e=>{
+    e.preventDefault();
+    const digits=e.clipboardData.getData('text').replace(/\D/g,'').slice(0,6);
+    digits.split('').forEach((d,j)=>{if(all[j])all[j].value=d;});
+    const ni=Math.min(digits.length,all.length-1);all[ni].focus();
+  });
+});
+
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+function toast(msg,type='info',dur=4000){
+  const wrap=document.getElementById('toast-wrap');
+  const el=document.createElement('div');
+  el.className=`toast toast-${type}`;
+  const ic={success:'check-circle',error:'x-circle',warning:'alert-triangle',info:'info'}[type]||'info';
+  el.innerHTML=`<i data-lucide="${ic}" style="width:18px;height:18px;flex-shrink:0"></i><span style="flex:1">${msg}</span>`;
+  wrap.appendChild(el);lucide.createIcons({nodes:[el]});
+  requestAnimationFrame(()=>el.classList.add('show'));
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300);},dur);
+}
+
+lucide.createIcons();
+</script>
+</body>
+</html>
